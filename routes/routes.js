@@ -1,5 +1,6 @@
-//cargue la conexion del grupo MySQL
-const pool = require('../data/config');
+//cargue la conexion del grupo SQL
+const mssql = require('mssql');
+const config = require('../data/config');
 
 //Ruta de la app
 const router = app => {
@@ -12,53 +13,93 @@ const router = app => {
 
     //Mostrar todos los usuarios
     app.get('/users', (request, response)=>{
-        pool.query('SELECT * FROM users', (error, result)=>{
-            if(error) throw error;
+        mssql.connect(config, function(err){
+            if(err) console.log(err);
 
-            response.send(result);
+            var request = new mssql.Request();
+
+            request.query('select * from users', function (err, recordset){
+                if(err) console.log(err)
+
+                response.send(recordset);
+            });
         });
     });
 
     //Mostrar un solo usuario por ID
     app.get('/users/:id', (request, response)=>{
-        const id = request.params.id;
+        mssql.connect(config, function(err){
 
-        pool.query('SELECT * FROM users WHERE id = ?', id, (error, result) => {
-            if(error) throw error;
+            const id = request.params.id;
 
-            response.send(result);
-        });        
-    });
+            if(err) console.log(err);
 
-    //Agregar un nuevo usuario
-    app.post('/users', (request, response)=>{
-        pool.query('INSERT INTO users SET ?', request.body, (error, result) => {
-            if(error) throw error;
+            var req = new mssql.Request();
 
-            response.status(201).send(`User added with ID: ${result.insertId}`);
+            req.query("select * from users where id = " + id, function (err, results){
+                if(err) console.log(err)
+
+                response.send(results);
+            });
         });
     });
+    //Agregar un nuevo usuario
+        app.post('/users', (request, response) => {
+        mssql.connect(config, function(err){
 
+            if(err) console.log(err);
+
+            var req = new mssql.Request();
+
+            const id = request.body.id;
+            const nombre = request.body[0].nombre;
+            const apellido = request.body[0].apellido;            
+
+            req.query("insert into users(nombre, apellido) values("+"'"+nombre+"','"+apellido+"')", function (err, results){
+                if(err) console.log(err)
+
+                response.status(201).send(`User added`);
+            });
+        });
+    });
+    
     //Actualizar un usuario existente
     app.put('/users/:id', (request, response) => {
-        const id = request.params.id;
+        mssql.connect(config, function(err){
 
-        pool.query('UPDATE users SET ? WHERE id = ?', [request.body, id], (error, result) =>{
-            if(error) throw error;
+            const id = request.params.id;
+            const nombre = request.body[0].nombre;
+            const apellido = request.body[0].apellido;
 
-            response.send('User updated successfully.');
+            if(err) console.log(err);
+
+            var req = new mssql.Request();
+
+            req.query("update users set nombre = "+"'"+nombre+"', apellido = "+"'"+apellido+"'"+"WHERE id = "+id, function (err, results){
+                if(err) console.log(err)
+
+                response.send('User updated succesfully');
+            });
         });
     });
-
-    //Eliminar un usuario
+//Eliminar un usuario
     app.delete('/users/:id', (request, response) => {
-        const id = request.params.id;
+        mssql.connect(config, function(err){
 
-        pool.query('DELETE FROM users WHERE id = ?', id, (error, result)=>{
-            if(error) throw error;
-            response.send('User deleted.');
+            const id = request.params.id;
+
+            if(err) console.log(err);
+
+            var req = new mssql.Request();
+
+            req.query("DELETE FROM users WHERE Id = "+id, function (err, results){
+                if(err) console.log(err)
+
+                response.send('User deleted');
+            });
         });
     });
+
 }
 
 // Exportar el router
