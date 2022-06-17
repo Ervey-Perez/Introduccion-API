@@ -1,13 +1,15 @@
-const sql = require('mssql');
+const mysql = require('mysql2');
 
 //set database connection credentials
 const config = {
-    user: "admin",
-    password: "Qwerty3001",
-    server: "localhost",
-    database: "api",
-  
-  };
+    host:'localhost',
+    user: 'l18540327',
+    password: 'VK5857ywdPd3szv',
+    database: 'apiervey',
+};
+
+//create a MySql pool
+const pool = mysql.createPool(config);
 
 //Export the pool
-module.exports = config;
+module.exports = pool;

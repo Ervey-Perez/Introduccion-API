@@ -1,6 +1,6 @@
 // Require packages and set the port
 const express = require('express');
-const port = 3002;
+const port = 18100;
 //para permitir el manejo de POST y PUT
 const bodyParser = require('body-parser');
 const routes = require('./routes/routes')
